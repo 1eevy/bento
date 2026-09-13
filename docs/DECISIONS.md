@@ -6578,3 +6578,103 @@ Pointers: `kernel/src/ui/panel.ts`, `kernel/src/ui/panel.css`,
 `scripts/test-ui-panel.ts` (62 checks; the drag/RTL/collapse/persistence/drawer
 behaviours are each mutation-caught, and the theming guard is reproduced from
 tier 1 — to be factored into one shared helper when both primitives have landed).
+## 2026-09-09 — Shared UI primitives live in the kernel; the menu is the first, and values stay the app's
+
+**Decision.** The seven UI primitives every Bento app implements independently
+move into `kernel/src/ui/`, one at a time, each as its own serialized kernel PR.
+The menu/dropdown is first: `kernel/src/ui/menu.ts` + `menu.css`, guarded by
+`scripts/test-ui-menu.ts`. **This lands the shared definition only — each app's
+migration is that app zone's own change**, per the kernel zone's rule that a
+kernel PR never carries the app half.
+
+**Why, and it is not bytes.** Each Bento app is one self-contained file, so
+shared code is bundled into each anyway; measured, the primitive adds 604
+compressed bytes to the slides shell while slides still carries its own menu
+code as well. A general primitive can easily cost more than the specific thing
+one app needed. The return is elsewhere.
+
+Comparing CSS selector NAMES across the apps finds nothing — two apps
+implementing the identical dropdown as `.ed-menu` and `.dv-menu` register as
+zero overlap, which is why an earlier count of 11 shared selectors out of 2,156
+concluded, wrongly, that there was nothing to share. Compared by CONCEPT, seven
+primitives are implemented four times over. The dropdown is one design copied
+four times, and the tell is the offset from the trigger: slides `calc(100% +
+4px)`, spaces `+5px`, dash `+6px`, type `+6px`. Nobody designed 4, 5, 6, 6.
+
+**The real cost is that hard-won knowledge has nowhere to live.** CLAUDE.md's
+hard-won details 9 and 10 — a flex item's `z-index` is a CEILING that caps every
+descendant, and `overflow-y: auto` also clips HORIZONTALLY — cost slides real
+debugging. Slides, spaces AND dash each record both traps in their own source,
+because each hit the same wall independently. Type records only one. Three teams
+paid for the same two lessons, and the only home either lesson had was a comment
+in one app's CSS. `menu.css` is now that home.
+
+**What differed between the four was invisible, and that is what the primitive
+fixes.** Of slides' eight dropdowns, five had no outside-press dismissal at all,
+one hand-rolled it inline and two called a helper; none closed on Escape. Three
+of the four apps publish no `aria-expanded` anywhere. No app had arrow-key
+navigation. slides and spaces each add document listeners per dropdown and
+remove none. So the primitive takes dash's single delegated listener pair and
+mutual exclusion, spaces' ARIA and disabled/selected row semantics, slides'
+split-button and phone-fold structure — and adds the arrow-key navigation and
+focus-return that no app had.
+
+**"Slides is the basis" is true of the CSS and false of the behaviour.** It was
+the maintainer's default and it holds for structure; where slides has the least,
+the fuller implementation wins on its merits and this entry says which.
+
+**Token VALUES are deliberately NOT settled here**, and neither is the theming
+MECHANISM. dash has `--line-strong`, `--shadow-pop`, `--radius-lg` and `--hover`
+that the other three lack, and a `--radius` of 7px against their 10px. Separately
+— and more importantly for a shared sheet — the four theme by three different
+mechanisms: slides and type via `:root[data-theme="dark"]`, spaces via that AND a
+`prefers-color-scheme` media query, dash via `light-dark()`, which resolves off
+`color-scheme`. All four DO have a dark theme; what differs is who decides.
+
+**A shared stylesheet therefore cannot express themed values with
+`light-dark()`.** slides sets `:root { color-scheme: only light }` deliberately
+(`slides/src/styles.css:96`) because without it a dark-mode phone renders native
+form controls dark under the app's dark ink — "blank" dropdowns — and Chrome on
+Android may force-darken the page. Under `only light`, every `light-dark()`
+value pins to its light half forever, so a shared sheet built on it would
+silently cost slides the dark theme it already has.
+
+`menu.css` sidesteps all of it: every value reads through a `--bkm-*` property
+whose fallback chain **consumes whatever themed token the host app already
+defines, by whichever mechanism that app themes it**. That is why one sheet
+survives four theming mechanisms without picking one, why adoption is
+appearance-neutral, and why tier 1 did not have to wait for the mechanism
+ruling. Only two values had to be picked, because a shared rule cannot hold
+four: the trigger offset (6px) and the stacking level (60), each the majority
+and each overridable per app.
+
+**The literal at the end of a themed chain is a latent dark-mode bug**, and this
+is the one defect tier 1 actually shipped and then caught. A chain ends in a
+light-only literal so the rule is never invalid; an app defining none of the
+tokens above it silently gets that literal in DARK mode. `type` has no
+`--surface` — its chrome surface token is `--field` — so `--bkm-bg` fell through
+to `#fff`, which would have painted a white menu under light ink. Fixed by
+extending the chain, and guarded by `scripts/test-ui-menu.ts`, which now asserts
+statically that every colour chain reaches a token each of the four apps both
+DEFINES and THEMES. A comment naming the gap was not enough; it named this one
+and the fallback was still wrong.
+
+**A boundary for tier 4, found here and not settled here.** Menus are chrome,
+and chrome should follow the theme — every app already themes the token this
+sheet consumes. The DOCUMENT must not, which `kernel/src/theme.ts:17-18` states
+outright. `type` draws that line explicitly and correctly, with `--paper` for
+the page and `--field` commented "form-control surface — CHROME, not paper".
+The shared token set should make that distinction explicit rather than inherit
+whichever app's habit arrives first.
+
+**The kernel ships CSS now, which it never did before.** Verified end to end
+rather than assumed: an app's `import '../../kernel/src/ui/menu.css'` is folded
+by Vite into the single stylesheet that `scripts/postbuild-compress.mjs`
+deflates into the `#bento-rt-css` payload, and the rules inflate intact out of
+the built shell. No build change was needed. `menu.ts` deliberately does NOT
+import its own stylesheet: keeping them separate is what lets the rig exercise
+the whole primitive in node with no build machinery and no CSS-import stub.
+
+Pointers: `kernel/src/ui/menu.ts` (the four-app comparison, function by
+function), `kernel/src/ui/menu.css` (details 9 and 10, written down once),
+`scripts/test-ui-menu.ts` (what each check guards, and which app's gap it is).

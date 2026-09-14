@@ -47,7 +47,9 @@ ok(/const locked = el\?\.type === 'image'/.test(sync), 'a shape or text box is n
 
 console.log('\nthe panel\n')
 const panels = read('slides/src/editor/panels.ts')
-const img = panels.slice(panels.indexOf('private buildImageProps'), panels.indexOf('private buildImageProps') + 2500)
+// the whole method, however long the Picture section grows: up to the next method
+const imgStart = panels.indexOf('private buildImageProps')
+const img = panels.slice(imgStart, panels.indexOf('\n  private ', imgStart + 1))
 ok(/this\.row\('Keep aspect ratio', this\.toggle\(\(el as ImageElement\)\.keepAspectRatio !== false/.test(img), 'the toggle reads absent as on')
 ok(/if \(on\) delete e\.keepAspectRatio/.test(img), 're-locking DELETES the field — never writes true, so a re-locked file equals an untouched one')
 ok(/else \{ e\.keepAspectRatio = false; e\.fit = 'fill' \}/.test(img), 'unlocking writes false and fit:\'fill\' so the stretch shows')

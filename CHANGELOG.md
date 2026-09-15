@@ -11,6 +11,18 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **An agent can place a slide by layout and role.** In the compact form a
+  slide may say `"layout": "title-body"` and its elements carry a `role`
+  (`title`, `body`, `subtitle`, `kicker`, `quote`, `attribution`, `image`,
+  `card1`…) instead of coordinates and typography: the layout's frames and
+  type are used, the same way *Apply layout* fills a slide in the editor, and
+  slides born from the same layout still morph their chrome. Several `body`
+  paragraphs stack into the slot, each sized to its text; an element that
+  carries its own `x y w h` is placed as given. Four new built-in layouts —
+  *Three cards*, *Quote*, *Image left*, *Image right* — appear in the layout
+  picker for everyone, next to the five that were there. The file on disk is
+  unchanged: the layout is applied on load, and what is saved is the placed
+  slide.
 - **The format has a schema, and every file says where it is.** A JSON
   Schema for the bento/slides document is generated from the same tables the
   app uses to check what it loads, so it cannot describe a deck the app would

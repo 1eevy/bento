@@ -11,6 +11,17 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **Slides export as images.** Save ▾ *Export slides as images…* writes
+  this slide, or every slide in the show, as PNG or JPEG at 1× or 2× — one
+  file per page, named after the deck (`My_Deck-page-01.png`), hidden slides
+  and interactive states left out the way a PDF leaves them out. Chromium
+  asks for a folder and writes the pages into it; other browsers get one
+  download per page; Safari can export the current slide. The picture is the
+  deck's own render — its fonts, gradients and shapes — with charts and media
+  as stills and web-linked images blank, since a file cannot fetch. No ZIP,
+  no second renderer: about four kilobytes of runtime. Asked for by den-sv
+  (#243, #261); the shape follows lazyeo's #306, kept to the thin half —
+  the heavier converter belongs to bento/convert.
 - **Connectors for diagrams.** Three asks from xairy, in one go. A
   *Curved connector* (#302): a curve that sticks to the elements at its ends
   and re-routes when they move, like the straight Connector, and carries a

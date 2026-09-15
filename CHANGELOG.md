@@ -11,6 +11,15 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **A Layers list.** The Slide panel now opens with *Layers*: every element
+  on the slide, top of the stack first, with a glyph and a short label (the
+  text's first words, or the kind). Click a row to select, shift-click to add,
+  drag a row to move it up or down the stack, or use ⌘↑ and ⌘↓ with the list
+  focused. With an element selected the same list closes its panel, so the
+  highlighted row is never far. Nothing new in the file: the list is a view
+  onto the order the four Order buttons (front, forward, backward, back) have
+  moved elements through since 1.0, and a row dropped somewhere lands exactly
+  where those buttons would put it. Asked for by Li Wei in discussion #371.
 - **Slides export as images.** Save ▾ *Export slides as images…* writes
   this slide, or every slide in the show, as PNG or JPEG at 1× or 2× — one
   file per page, named after the deck (`My_Deck-page-01.png`), hidden slides

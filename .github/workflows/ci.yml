@@ -1353,6 +1353,12 @@ jobs:
         # routes the argument. Bare {{date}} stays viewer-locale (#381).
         run: node scripts/test-slides-fields.ts
 
+      - name: Layers panel rig
+        # editor/layerrows.ts, DOM-free: rows top-first, labels per type,
+        # group indent, moveInPaintOrder == the Order buttons (front/back/±1,
+        # a group moves as one, a no-op returns the same array), highlight
+        # follows the selection; render/present never see the list (#371).
+        run: node scripts/test-slides-layers.ts
       - name: Export slides as images rig
         # exportimages.ts decisions (DOM-free): the page set is the print set
         # (hidden/state out, deck order), names pad NN and use the kernel's

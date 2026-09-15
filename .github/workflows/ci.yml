@@ -1388,6 +1388,11 @@ jobs:
         # routes the argument. Bare {{date}} stays viewer-locale (#381).
         run: node scripts/test-slides-fields.ts
 
+      - name: Maths in links rig
+        # resolveMath transforms text runs only: a `$` inside an href never
+        # pairs with one in the text, so a link whose address carries a
+        # dollar sign keeps its href (pre-existing since #465).
+        run: node scripts/test-slides-math-href.ts
       - name: Compact document rig
         # The agent authoring form (#422): compactDoc/expandDoc are inverses
         # on the starter deck, expansion equals the editor's insert helpers

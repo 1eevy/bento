@@ -11,6 +11,10 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **A web link whose address contains a dollar sign works again.** Since
+  links arrived, an address like `…/$a$b` had its two dollars read as a
+  formula and the link broke; formulas are now looked for in the text only,
+  never inside a tag.
 - **An agent can place a slide by layout and role.** In the compact form a
   slide may say `"layout": "title-body"` and its elements carry a `role`
   (`title`, `body`, `subtitle`, `kicker`, `quote`, `attribution`, `image`,

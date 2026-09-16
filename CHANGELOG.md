@@ -11,6 +11,33 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **A deck opens inside Teams and SharePoint again.** Their viewer refuses
+  the way 1.1.0's file started itself (a script loaded from a `blob:` URL).
+  The file now starts the way nothing refuses: the runtime is inserted as an
+  inline script first, and only if a policy turns that down does it fall
+  back to `new Function`, then to the blob import — measured in Teams with
+  seven variants. Inside such a viewer the frame has no storage, so
+  autosave and preferences do not persist there, and its policy blocks every
+  connection — so inside an embedded view the app makes no request at all:
+  no update check at launch, no language-pack listing, no live-session
+  socket; the About dialog says so. The deck itself opens, presents and
+  saves.
+- **A deck opened in a background tab is ready when you switch to it.** The
+  compressed file used to finish starting in a later task and hold its
+  splash on a timer — in a tab that was not visible (or a viewer rendering
+  the file off-screen for a preview card) timers are throttled and frames
+  never come, so the editor sat behind the splash until the tab was looked
+  at. The runtime now unpacks and starts inside the file's own script,
+  before the page is even "loaded", and a hidden document drops the splash
+  the moment the editor exists; visible, the brand moment is held for at
+  most 0.8 s and never waits on its own fade.
+- **Every file is about 38 KB smaller.** The runtime's two compressed blocks
+  used to be base64; they are now base86 — 86 printable characters chosen so
+  the text can never close or comment out the block that carries it — which
+  is 6.25% denser (4 bytes in 5 characters instead of 3 in 4). Measured on
+  the release shell: 699,847 → 661,768 bytes. Older versions keep opening
+  their own files; this one still reads theirs. The new decoder is also
+  quicker than the old `atob` path (11 ms against 47 for the runtime).
 - **A web link whose address contains a dollar sign works again.** Since
   links arrived, an address like `…/$a$b` had its two dollars read as a
   formula and the link broke; formulas are now looked for in the text only,

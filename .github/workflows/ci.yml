@@ -1388,6 +1388,19 @@ jobs:
         # routes the argument. Bare {{date}} stays viewer-locale (#381).
         run: node scripts/test-slides-fields.ts
 
+      - name: Shell loader and carrier rig
+        # base86 payloads (scripts/lib/b86.mjs) round-trip and can never
+        # contain </script, <!--, -->, ]]> or ${; the loader inflates
+        # synchronously and runs the runtime as an inline classic script
+        # FIRST (mounted before DOMContentLoaded, as the uncompressed build
+        # is), probes and waits on nothing, falls to new Function then blob
+        # only on a refusal, installs Trusted Types policies lazily, and
+        # records window.bento.loader. The gate goes red on a hand-edited
+        # payload. The browser half drives headless Chrome with a real
+        # background tab: mounted before DCL hidden, splash gone within 50 ms
+        # of the mount there. Needs slides/node_modules and the built shell.
+        run: node scripts/test-shell-loader.ts
+
       - name: Maths in links rig
         # resolveMath transforms text runs only: a `$` inside an href never
         # pairs with one in the text, so a link whose address carries a

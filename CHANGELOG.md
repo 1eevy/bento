@@ -11,6 +11,13 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **The Layers list stays put.** It sat at the top of the panel with nothing
+  selected and at the bottom once something was, so every click on the canvas
+  moved it; and it rebuilt itself on every frame of a drag, so it flickered
+  and lost its scroll while you moved things. It has one home now, first in
+  the panel whatever is selected, and it only redraws when the order, the
+  members or a label actually change — a move, a resize or a click never
+  touches it. Reported by the maintainer.
 - **Pasting keeps the formatting.** Copy bold, italic or a list from one text
   box and paste it into another, or into a table cell, and it arrives as it
   was — the paste used to read only the plain-text copy and rebuild from

@@ -47,6 +47,7 @@ import { shrinkImageFile, shrinkEnabled, setShrinkEnabled, shrinkNote, fmtBytes,
 import { dryRun, applyCompress, type DryRun } from './compressdeck'
 import { createDialog } from '../../../kernel/src/ui/dialog.ts'
 import '../../../kernel/src/ui/dialog.css'
+import { PresenceToasts } from './presencetoasts'
 
 const i18nT = t
 
@@ -136,24 +137,18 @@ export class Editor {
   /** wire the live-collaboration session (avatars, remote selections, relay) */
   connectSync(session: import('../sync/session').SyncSession) {
     this.session = session
-    let known = new Map(session.peers().map((p) => [p.actor, p.name]))
+    // presence arrivals/departures get a quiet heads-up — said once per REAL
+    // arrival and departure (presencetoasts.ts: a departure must last, a
+    // return within minutes is a flap of a throttled tab, not a join), and
+    // not at all in a crowded room, where the per-peer toasts would storm
+    const toasts = new PresenceToasts({
+      toast: (kind, name) => this.toast(kind === 'joined' ? t('{name} joined', { name }) : t('{name} left', { name })),
+    }, session.peers())
     session.onPeers(() => {
       this.renderAvatars()
       this.canvas.setRemotePeers(session.peers())
       if (this.shareWrap.classList.contains('open')) this.renderSharePanel()
-      // presence arrivals/departures get a quiet heads-up — but in a crowded
-      // room (or when joining one, where every existing peer looks like a fresh
-      // arrival), the per-peer toasts would storm. Stay silent past a threshold.
-      const now = new Map(session.peers().map((p) => [p.actor, p.name]))
-      if (now.size <= 8) {
-        for (const [actor, name] of now) {
-          if (!known.has(actor)) this.toast(t('{name} joined', { name }))
-        }
-        for (const [actor, name] of known) {
-          if (!now.has(actor)) this.toast(t('{name} left', { name }))
-        }
-      }
-      known = now
+      toasts.update(session.peers())
     })
     // the relay refused something (too big, room full, throttled) — the user
     // needs to know, because for the permanent codes their change stays in

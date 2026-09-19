@@ -11,6 +11,14 @@ pre-1.0.
 
 ## [Unreleased]
 
+- **"Joined" and "left" are said once per real arrival and departure.** A
+  collaborator who switched to another tab for a few minutes was announced
+  as leaving and joining once a minute, to everyone in the room, while
+  doing nothing: browsers slow a hidden tab's timers to once a minute, so
+  their presence heartbeat arrived late, the room dropped them, and the next
+  beat brought them back. A departure is now announced only once it has
+  lasted, and a return within a few minutes is not a new arrival. The avatar
+  strip still follows presence exactly; this changes only what gets said.
 - **Compress the pictures already in a deck.** 1.2.0 shrinks a photo as you
   insert it; a deck made before that still carries its photos at full size.
   About ▸ *Compress pictures in this deck…* runs every picture through the
